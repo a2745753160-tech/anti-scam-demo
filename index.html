@@ -5,53 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>限时福利：免费领取鲜鸡蛋</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f7f7f7; margin: 0; padding: 0; }
-        .header { background-color: #ff4d4f; color: white; text-align: center; padding: 20px; font-size: 20px; font-weight: bold; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; background-color: #f7f7f7; margin: 0; padding: 0; user-select: none; }
+        .header { background-color: #ff4d4f; color: white; text-align: center; padding: 25px 20px; font-size: 22px; font-weight: bold; }
         .content { padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .gift-img { width: 100%; border-radius: 4px; }
-        .form-group { margin-top: 15px; }
-        label { display: block; margin-bottom: 5px; color: #333; font-size: 14px; }
-        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
-        .btn { display: block; width: 100%; background-color: #52c41a; color: white; text-align: center; padding: 12px; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; }
+        .egg-icon { font-size: 60px; margin-bottom: 10px; }
+        .title { font-size: 18px; color: #333; font-weight: bold; margin-bottom: 10px; }
+        .desc { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 25px; }
+        
+        /* 伪装的微信绿色快捷登录按钮 */
+        .wechat-btn { display: flex; align-items: center; justify-content: center; width: 100%; background-color: #07c160; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .wechat-btn:active { background-color: #06ad56; }
+        .wechat-icon { width: 22px; height: 22px; margin-right: 8px; fill: currentColor; }
+
+        /* 高仿微信底部授权弹窗样式 */
+        .mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        .dialog { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top-left-radius: 16px; border-top-right-radius: 16px; box-sizing: border-box; padding: 24px; z-index: 1000; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .dialog-header { display: flex; align-items: center; margin-bottom: 20px; }
+        .app-logo { width: 28px; height: 28px; background: #ff4d4f; border-radius: 4px; margin-right: 10px; }
+        .app-name { font-size: 16px; font-weight: bold; color: #333; }
+        .dialog-title { font-size: 18px; font-weight: bold; color: #000; margin-bottom: 8px; text-align: left; }
+        .dialog-desc { font-size: 14px; color: #888; border-bottom: 1px solid #f0f0f0; padding-bottom: 16px; text-align: left; margin-bottom: 20px; }
+        
+        .user-profile { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; margin-bottom: 30px; }
+        .avatar-area { display: flex; align-items: center; }
+        .mock-avatar { width: 44px; height: 44px; background: #e0e0e0; border-radius: 4px; margin-right: 12px; position: relative; }
+        .mock-avatar::after { content: "👤"; position: absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size: 24px; }
+        .user-info-text { text-align: left; }
+        .user-nickname { font-size: 16px; color: #333; font-weight: bold; }
+        .user-phone { font-size: 13px; color: #888; margin-top: 4px; }
+        .check-icon { color: #07c160; font-weight: bold; font-size: 18px; }
+
+        .dialog-buttons { display: flex; justify-content: space-between; }
+        .btn-reject { width: 30%; background: #f2f2f2; color: #555; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
+        .btn-accept { width: 65%; background: #07c160; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="header">社区中老年感恩回馈活动</div>
+    <div class="header">社区礼品网</div>
     
     <div class="content">
         <div class="card">
-            <h3 style="margin-top:0; color: #ff4d4f;">🎁 登记个人信息，免费领鸡蛋一盒！</h3>
-            <p style="color: #666; font-size: 14px;">为确保礼品精准发放，请务必填写本人真实有效信息。数量有限，先到先得。</p>
+            <div class="egg-icon">🥚</div>
+            <div class="title">社区中老年专享：免费领鲜鸡蛋</div>
+            <div class="desc">为了方便核对社区居民身份，请使用微信快捷登录并授权绑定手机号，系统将自动核准发放资格。</div>
             
-            <form id="mockForm" onsubmit="showAlert(event)">
-                <div class="form-group">
-                    <label>姓名：</label>
-                    <input type="text" placeholder="请输入您的真实姓名" required>
+            <!-- 伪装按钮 -->
+            <button class="wechat-btn" onclick="openAuth()">
+                <svg class="wechat-icon" viewBox="0 0 24 24"><path d="M8.5 14c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm7 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zM12 4c-4.7 0-8.5 3.1-8.5 7 0 2.2 1.2 4.2 3.2 5.5l-.8 2.3 2.6-1.3c1.1.3 2.2.5 3.5.5 4.7 0 8.5-3.1 8.5-7S16.7 4 12 4z"/></svg>
+                微信一键授权快捷领取
+            </button>
+        </div>
+    </div>
+
+    <!-- 微信伪装弹窗遮罩 -->
+    <div class="mask" id="mask"></div>
+    <!-- 微信伪装弹窗主体 -->
+    <div class="dialog" id="authDialog">
+        <div class="dialog-header">
+            <div class="app-logo"></div>
+            <div class="app-name">社区礼品网 申请</div>
+        </div>
+        <div class="dialog-title">获取你的手机号</div>
+        <div class="dialog-desc">用于同步您的社区福利发放记录与实名认证</div>
+        
+        <div class="user-profile">
+            <div class="avatar-area">
+                <div class="mock-avatar"></div>
+                <div class="user-info-text">
+                    <div class="user-nickname">微信绑定的手机号</div>
+                    <div class="user-phone">13X-XXXX-XXXX</div>
                 </div>
-                <div class="form-group">
-                    <label>手机号码：</label>
-                    <input type="tel" placeholder="请输入手机号（接收验证码）" required>
-                </div>
-                <div class="form-group">
-                    <label>身份证号：</label>
-                    <input type="text" placeholder="用于核实领取资格" required>
-                </div>
-                <button type="submit" class="btn">立即点击免费领取</button>
-            </form>
+            </div>
+            <div class="check-icon">✓</div>
+        </div>
+        
+        <div class="dialog-buttons">
+            <button class="btn-reject" onclick="closeAuth()">拒绝</button>
+            <button class="btn-accept" onclick="triggerWarning()">允许</button>
         </div>
     </div>
 
     <script>
-        function showAlert(event) {
-            event.preventDefault(); // 阻止表单实际提交
+        function openAuth() {
+            document.getElementById('mask').style.display = 'block';
+            document.getElementById('authDialog').style.display = 'block';
+        }
+
+        function closeAuth() {
+            document.getElementById('mask').style.display = 'none';
+            document.getElementById('authDialog').style.display = 'none';
+        }
+
+        function triggerWarning() {
+            closeAuth();
+            // 直接弹出警示
+            alert("🚨 防诈骗演练警报！\n\n刚才您点击了“允许”授权。在真实的未知网页中，这种假冒的“微信授权”弹窗会直接静默窃取您的手机号、微信号等敏感隐私，甚至可能诱导您下载恶意软件！\n\n千万不要在任何非官方页面上轻易点击“允许”或“授权”！");
             
-            // 弹出强警示框
-            alert("🚨 警报：您已经陷入了模拟的“信息入瓮”陷阱！\n\n刚才您填写的姓名、手机号和身份证号，已经可以在后台被不法分子一览无余！");
-            
-            // 跳转至科普教育内容
-            window.location.href = "https://www.chinaanti-scam.cn/"; // 可替换为权威的反诈教育网页
+            // 跳转到中国反诈服务平台
+            window.location.href = "https://www.chinaanti-scam.cn/";
         }
     </script>
 </body>
